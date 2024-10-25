@@ -15,7 +15,7 @@ import sys
 _message("import over.")
 
 DEBUG = False
-URL = "http://219.226.127.250/"
+URL = "http://drcom.tyut.edu.cn/"
 BROWSER_BINARY_PATH = subprocess.getoutput("which firefox")
 
 def _get_path():
@@ -90,11 +90,33 @@ def open_url(browser):
     tm.sleep(0.5)
     return browser
 
-def check_login(browser) -> bool:
+def check_login(browser:webdriver.Firefox) -> bool:
     page = browser.page_source
-    if "您已经成功登录。" in page or\
-       "You have successfully logged into our system." in page:
-        return True
+
+    for i in range(20):
+        if "正在登录..." in page:
+            tm.sleep(0.5)
+
+        elif "ldap auth error" in page:
+            _error("account or password error")
+            return False
+
+        else:
+            page = browser.page_source
+            url = browser.current_url
+
+            if "您已经成功登录。" in page or\
+            "You have successfully logged into our system." in page:
+                return True
+                
+            elif url == "https://www.tyut.edu.cn/":
+                return True
+            
+            else:
+                return False
+    
+    print(page)
+    _error("Timeout while waiting for a response")
     return False
 
 def login(browser, usr_name:str, psw:str) -> None:
@@ -119,6 +141,7 @@ if __name__ == "__main__":
     open_url(browser)
     if not check_login(browser):
         login(browser, usr_name, psw)
+        open_url(browser)
         if check_login(browser):
             _message(f"success(using: {usr_name}).")
         else:
