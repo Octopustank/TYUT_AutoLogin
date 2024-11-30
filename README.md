@@ -1,3 +1,5 @@
+> 没有适配最新的登录页
+
 A crawler script for automatic login to TYUT campus network.
 
 # Features
